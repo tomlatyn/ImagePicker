@@ -12,7 +12,7 @@ private func < <T: Comparable>(lhs: T?, rhs: T?) -> Bool {
   }
 }
 
-protocol ImageGalleryPanGestureDelegate: AnyObject {
+protocol ImageGalleryPanGestureDelegate: class {
 
   func panGestureDidStart()
   func panGestureDidChange(_ translation: CGPoint)
@@ -26,7 +26,7 @@ open class ImageGalleryView: UIView {
     static let galleryBarHeight: CGFloat = 24
   }
 
-  var configuration = ImagePickerConfiguration()
+  var configuration = Configuration()
 
   lazy open var collectionView: UICollectionView = { [unowned self] in
     let collectionView = UICollectionView(frame: CGRect.zero,
@@ -42,7 +42,7 @@ open class ImageGalleryView: UIView {
 
   lazy var collectionViewLayout: UICollectionViewLayout = { [unowned self] in
     let layout = ImageGalleryLayout(configuration: self.configuration)
-    layout.scrollDirection = configuration.galleryOnly ? .vertical : .horizontal
+    layout.scrollDirection = .horizontal
     layout.minimumInteritemSpacing = self.configuration.cellSpacing
     layout.minimumLineSpacing = 2
     layout.sectionInset = UIEdgeInsets.zero
@@ -90,7 +90,7 @@ open class ImageGalleryView: UIView {
 
   // MARK: - Initializers
 
-  public init(configuration: ImagePickerConfiguration? = nil) {
+  public init(configuration: Configuration? = nil) {
     if let configuration = configuration {
       self.configuration = configuration
     }
@@ -113,11 +113,7 @@ open class ImageGalleryView: UIView {
     collectionView.register(ImageGalleryViewCell.self,
                             forCellWithReuseIdentifier: CollectionView.reusableIdentifier)
 
-    if configuration.galleryOnly {
-      addSubview(collectionView)
-    } else {
-      [collectionView, topSeparator].forEach { addSubview($0) }
-    }
+    [collectionView, topSeparator].forEach { addSubview($0) }
 
     topSeparator.addSubview(configuration.indicatorView)
 
@@ -140,19 +136,8 @@ open class ImageGalleryView: UIView {
     topSeparator.autoresizingMask = [.flexibleLeftMargin, .flexibleRightMargin, .flexibleWidth]
     configuration.indicatorView.frame = CGRect(x: (totalWidth - configuration.indicatorWidth) / 2, y: (topSeparator.frame.height - configuration.indicatorHeight) / 2,
       width: configuration.indicatorWidth, height: configuration.indicatorHeight)
-    
-    collectionView.frame = CGRect(x: 0,
-                                  y: topSeparator.superview != nil ? topSeparator.frame.height : 0,
-                                  width: totalWidth,
-                                  height: collectionFrame - topSeparator.frame.height)
-    
-    if configuration.galleryOnly {
-      let cellSize = collectionView.bounds.width/3 - self.configuration.cellSpacing*2
-      collectionSize = CGSize(width: cellSize, height: cellSize)
-    } else {
-      collectionSize = CGSize(width: collectionView.frame.height, height: collectionView.frame.height)
-    }
-    
+    collectionView.frame = CGRect(x: 0, y: topSeparator.frame.height, width: totalWidth, height: collectionFrame - topSeparator.frame.height)
+    collectionSize = CGSize(width: collectionView.frame.height, height: collectionView.frame.height)
     noImagesLabel.center = CGPoint(x: bounds.width / 2, y: (bounds.height + Dimensions.galleryBarHeight) / 2)
 
     collectionView.reloadData()

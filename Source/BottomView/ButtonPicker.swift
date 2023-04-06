@@ -1,6 +1,6 @@
 import UIKit
 
-protocol ButtonPickerDelegate: AnyObject {
+protocol ButtonPickerDelegate: class {
 
   func buttonDidPress()
 }
@@ -13,12 +13,12 @@ class ButtonPicker: UIButton {
     static let buttonBorderSize: CGFloat = 68
   }
 
-  var imagePickerConfiguration = ImagePickerConfiguration()
+    var pickerConfiguration = ImagePicker.Configuration()
 
   lazy var numberLabel: UILabel = { [unowned self] in
     let label = UILabel()
     label.translatesAutoresizingMaskIntoConstraints = false
-    label.font = self.imagePickerConfiguration.numberLabelFont
+    label.font = self.pickerConfiguration.numberLabelFont
 
     return label
     }()
@@ -27,9 +27,9 @@ class ButtonPicker: UIButton {
 
   // MARK: - Initializers
 
-  public init(configuration: ImagePickerConfiguration? = nil) {
+    public init(configuration: ImagePicker.Configuration? = nil) {
     if let configuration = configuration {
-      self.imagePickerConfiguration = configuration
+      self.pickerConfiguration = configuration
     }
     super.init(frame: .zero)
     configure()

@@ -11,7 +11,7 @@ import Photos
 
 open class ImagePickerController: UIViewController {
 
-  let configuration: ImagePickerConfiguration
+  let configuration: Configuration
 
   struct GestureConstants {
     static let maximumHeight: CGFloat = 200
@@ -84,25 +84,25 @@ open class ImagePickerController: UIViewController {
   open var doneButtonTitle: String? {
     didSet {
       if let doneButtonTitle = doneButtonTitle {
-        bottomContainer.doneButton.setTitle(doneButtonTitle, for: UIControl.State())
+        bottomContainer.doneButton.setTitle(doneButtonTitle, for: UIControlState())
       }
     }
   }
 
   // MARK: - Initialization
 
-  @objc public required init(configuration: ImagePickerConfiguration = ImagePickerConfiguration()) {
+  @objc public required init(configuration: Configuration = Configuration()) {
     self.configuration = configuration
     super.init(nibName: nil, bundle: nil)
   }
 
   public override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
-    self.configuration = ImagePickerConfiguration()
+    self.configuration = Configuration()
     super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
   }
   
   public required init?(coder aDecoder: NSCoder) {
-    self.configuration = ImagePickerConfiguration()
+    self.configuration = Configuration()
     super.init(coder: aDecoder)
   }
 
@@ -110,27 +110,19 @@ open class ImagePickerController: UIViewController {
 
   open override func viewDidLoad() {
     super.viewDidLoad()
-    
-    let addSubview: (UIView) -> Void = { subview in
-      self.view.addSubview(subview)
-      subview.translatesAutoresizingMaskIntoConstraints = false
-    }
-    
-    if !configuration.galleryOnly {
-      addSubview(cameraController.view)
-      addSubview(topView)
-      cameraController.view.addGestureRecognizer(panGestureRecognizer)
-    }
-    
-    for subview in [galleryView, bottomContainer] {
-      addSubview(subview)
+
+    for subview in [cameraController.view, galleryView, bottomContainer, topView] {
+      view.addSubview(subview!)
+      subview?.translatesAutoresizingMaskIntoConstraints = false
     }
 
     view.addSubview(volumeView)
-    view.sendSubviewToBack(volumeView)
+    view.sendSubview(toBack: volumeView)
 
     view.backgroundColor = UIColor.white
     view.backgroundColor = configuration.mainColor
+
+    cameraController.view.addGestureRecognizer(panGestureRecognizer)
 
     subscribe()
     setupConstraints()
@@ -157,12 +149,10 @@ open class ImagePickerController: UIViewController {
     galleryView.collectionView.transform = CGAffineTransform.identity
     galleryView.collectionView.contentInset = UIEdgeInsets.zero
 
-    if !configuration.galleryOnly {
-      galleryView.frame = CGRect(x: 0,
+    galleryView.frame = CGRect(x: 0,
                                y: totalSize.height - bottomContainer.frame.height - galleryHeight,
                                width: totalSize.width,
                                height: galleryHeight)
-    }
     galleryView.updateFrames()
     checkStatus()
 
@@ -171,7 +161,8 @@ open class ImagePickerController: UIViewController {
 
     applyOrientationTransforms()
 
-    UIAccessibility.post(notification: UIAccessibility.Notification.screenChanged, argument: bottomContainer)
+    UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification,
+                                    bottomContainer);
   }
 
   open func resetAssets() {
@@ -199,7 +190,7 @@ open class ImagePickerController: UIViewController {
     let alertController = UIAlertController(title: configuration.requestPermissionTitle, message: configuration.requestPermissionMessage, preferredStyle: .alert)
 
     let alertAction = UIAlertAction(title: configuration.OKButtonTitle, style: .default) { _ in
-      if let settingsURL = URL(string: UIApplication.openSettingsURLString) {
+      if let settingsURL = URL(string: UIApplicationOpenSettingsURLString) {
         UIApplication.shared.openURL(settingsURL)
       }
     }
@@ -246,7 +237,7 @@ open class ImagePickerController: UIViewController {
     
     NotificationCenter.default.addObserver(self,
                                            selector: #selector(dismissIfNeeded),
-                                           name: NSNotification.Name(rawValue: ImageStack.Notifications.imageDidPush),
+                                           name: NSNotification.Name(rawValue: ImageStack.Notifications.imageDidDrop),
                                            object: nil)
 
     NotificationCenter.default.addObserver(self,
@@ -261,7 +252,7 @@ open class ImagePickerController: UIViewController {
 
     NotificationCenter.default.addObserver(self,
       selector: #selector(handleRotation(_:)),
-      name: UIDevice.orientationDidChangeNotification,
+      name: NSNotification.Name.UIDeviceOrientationDidChange,
       object: nil)
   }
 
@@ -286,7 +277,7 @@ open class ImagePickerController: UIViewController {
 
     let title = !sender.assets.isEmpty ?
       configuration.doneButtonTitle : configuration.cancelButtonTitle
-    bottomContainer.doneButton.setTitle(title, for: UIControl.State())
+    bottomContainer.doneButton.setTitle(title, for: UIControlState())
   }
   
   @objc func dismissIfNeeded() {

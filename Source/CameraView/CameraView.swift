@@ -2,7 +2,7 @@ import UIKit
 import AVFoundation
 import PhotosUI
 
-protocol CameraViewDelegate: AnyObject {
+protocol CameraViewDelegate: class {
 
   func setFlashButtonHidden(_ hidden: Bool)
   func imageToLibrary()
@@ -11,7 +11,7 @@ protocol CameraViewDelegate: AnyObject {
 
 class CameraView: UIViewController, CLLocationManagerDelegate, CameraManDelegate {
 
-  var configuration = ImagePickerConfiguration()
+  var configuration = Configuration()
 
   lazy var blurView: UIVisualEffectView = { [unowned self] in
     let effect = UIBlurEffect(style: .dark)
@@ -59,11 +59,11 @@ class CameraView: UIViewController, CLLocationManagerDelegate, CameraManDelegate
     let button = UIButton(type: .system)
     let title = NSAttributedString(string: self.configuration.settingsTitle,
       attributes: [
-        NSAttributedString.Key.font: self.configuration.settingsFont,
-        NSAttributedString.Key.foregroundColor: self.configuration.settingsColor
+        NSAttributedStringKey.font: self.configuration.settingsFont,
+        NSAttributedStringKey.foregroundColor: self.configuration.settingsColor
       ])
 
-    button.setAttributedTitle(title, for: UIControl.State())
+    button.setAttributedTitle(title, for: UIControlState())
     button.contentEdgeInsets = UIEdgeInsets(top: 5.0, left: 10.0, bottom: 5.0, right: 10.0)
     button.sizeToFit()
     button.layer.borderColor = self.configuration.settingsColor.cgColor
@@ -102,7 +102,7 @@ class CameraView: UIViewController, CLLocationManagerDelegate, CameraManDelegate
   private var currentZoomFactor: CGFloat = 1.0
   private var previousZoomFactor: CGFloat = 1.0
 
-  public init(configuration: ImagePickerConfiguration? = nil) {
+  public init(configuration: Configuration? = nil) {
     if let configuration = configuration {
       self.configuration = configuration
     }
@@ -187,7 +187,7 @@ class CameraView: UIViewController, CLLocationManagerDelegate, CameraManDelegate
 
   @objc func settingsButtonDidTap() {
     DispatchQueue.main.async {
-      if let settingsURL = URL(string: UIApplication.openSettingsURLString) {
+      if let settingsURL = URL(string: UIApplicationOpenSettingsURLString) {
         UIApplication.shared.openURL(settingsURL)
       }
     }

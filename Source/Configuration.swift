@@ -1,7 +1,7 @@
 import AVFoundation
 import UIKit
 
-@objc public class ImagePickerConfiguration: NSObject {
+@objc public class Configuration: NSObject {
 
   // MARK: Colors
 
@@ -53,7 +53,6 @@ import UIKit
   @objc public var allowedOrientations = UIInterfaceOrientationMask.all
   @objc public var allowVolumeButtonsToTakePicture = true
   @objc public var useLowResolutionPreviewImage = false
-  @objc public var galleryOnly = false
 
   // MARK: Images
   @objc public var indicatorView: UIView = {
@@ -68,7 +67,7 @@ import UIKit
 }
 
 // MARK: - Orientation
-extension ImagePickerConfiguration {
+extension Configuration {
 
   @objc public var rotationTransform: CGAffineTransform {
     let currentOrientation = UIDevice.current.orientation
